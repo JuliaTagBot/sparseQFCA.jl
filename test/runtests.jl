@@ -1,8 +1,7 @@
-include("../sparseQFCA.jl")
-using .sparseQFCA, SparseArrays, DelimitedFiles, Test
-S = sparse(readdlm("../example/S.csv", header = false))
-@assert typeof(S) == SparseMatrixCSC{Float64,Int64}
-rev = readdlm("../example/rev.csv", header = false)[:, 1] .== 1
-@assert typeof(rev) == BitArray{1}
-certificates, blocked, fctable = @time QFCA(S, rev)
-@test all(readdlm("../example/fctable.csv", header = false) .== fctable)
+# importing the example model and the sparseQFCA module
+include("../example/ecoli.jl")
+include("../src/sparseQFCA.jl")
+using .sparseQFCA, .ecoli, Test
+# finding all the flux coupling relations among the reactions
+fctable = @time QFCA(S, rev)[end]
+@test fctest(fctable)
