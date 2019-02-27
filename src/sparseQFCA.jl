@@ -1,7 +1,7 @@
-module sparseQFCA
+﻿module sparseQFCA
 export QFCA
 
-using LinearAlgebra, SparseArrays, JuMP, GLPKMathProgInterface       
+using LinearAlgebra, SparseArrays, JuMP, GLPK       
 
 function QFCA(S, rev)
 #=
@@ -24,7 +24,7 @@ and irreversible reactions and also returns the DCE positive certificates.
                 3 - reaction i is directionally coupled to reaction j
                 4 - reaction j is directionally coupled to reaction i
 =#
-    model = Model(solver = GLPKSolverLP())
+    model = Model(with_optimizer(GLPK.Optimizer))
     m, n = size(S)
     ub = [fill(Inf, m); fill(0.0, n)]
     lb = -copy(ub)
@@ -32,18 +32,18 @@ and irreversible reactions and also returns the DCE positive certificates.
     A = [S' -sparse(I, n, n)]
     for j in 1:n
         if rev[j]
-            @constraint(model, sum{A[j,k]*z[k], k=1:m+n} == 0.0)
+            @constraint(model, sum(A[j,k]*z[k] for k in 1:m+n) == 0.0)
         else
-            @constraint(model, sum{A[j,k]*z[k], k=1:m+n} <= 0.0)
+            @constraint(model, sum(A[j,k]*z[k] for k in 1:m+n) <= 0.0)
         end
     end
-    @objective(model, Min, sum{z[j], j = [m + j for j in 1:n if !rev[j]]})
+    @objective(model, Min, sum(z[j] for j in [m + j for j in 1:n if !rev[j]]))
     for j in 1:n
-        setupperbound(z[m + j], 0.0)
-        setlowerbound(z[m + j], rev[j] ? 0.0 : -1.0)
+        set_upper_bound(z[m + j], 0.0)
+        set_lower_bound(z[m + j], rev[j] ? 0.0 : -1.0)
     end
-    status = solve(model)
-    result = getvalue(z)[m+1:end]
+    optimize!(model)
+    result = [value(z[j]) for j in m+1:m+n]
     blocked = result .≈ -1
     finalBlocked = copy(blocked)
     Z = nullspace(Matrix(S[:, .!blocked]))
@@ -71,7 +71,7 @@ and irreversible reactions and also returns the DCE positive certificates.
             end
         end
     end   
-    fullModel = Model(solver = GLPKSolverLP())
+    fullModel = Model(with_optimizer(GLPK.Optimizer))
     m, n = size(S)
     ub = [fill(Inf, m); fill(0.0, n)]
     lb = -copy(ub)
@@ -79,9 +79,9 @@ and irreversible reactions and also returns the DCE positive certificates.
     A = [S' -sparse(I, n, n)]
     for j in 1:n
         if rev[j]
-            @constraint(fullModel, sum{A[j,k]*x[k], k=1:m+n} == 0.0)
+            @constraint(fullModel, sum(A[j,k]*x[k] for k in 1:m+n) == 0.0)
         else
-            @constraint(fullModel, sum{A[j,k]*x[k], k=1:m+n} <= 0.0)
+            @constraint(fullModel, sum(A[j,k]*x[k] for k in 1:m+n) <= 0.0)
         end
     end
     fctable = zeros(n, n)
@@ -89,43 +89,43 @@ and irreversible reactions and also returns the DCE positive certificates.
     for i in 1:size(fc, 1)
         indices = findall(fc[i,:])
         for j in 1:n
-            setupperbound(x[m + j], in(j, indices) ? Inf : 0.0)
-            setlowerbound(x[m + j], in(j, indices) ? -Inf : (rev[j] ? 0.0 : -1.0))
+            set_upper_bound(x[m + j], in(j, indices) ? Inf : 0.0)
+            set_lower_bound(x[m + j], in(j, indices) ? -Inf : (rev[j] ? 0.0 : -1.0))
         end
-        @objective(fullModel, Min, sum{x[j], j = [m + j for j in 1:n if !(in(j, indices) || rev[j])]})
-        status = solve(fullModel)
-        result = getvalue(x)[m+1:end]
+        @objective(fullModel, Min, sum(x[j] for j in [m + j for j in 1:n if !(in(j, indices) || rev[j])]))
+        optimize!(fullModel)
+        result = [value(x[j]) for j in m+1:m+n]
         blocked = [!in(j, indices) && result[j] ≈ -1 for j = 1:n]
         if any(blocked)
             index = indices[findmax(result[indices].^2)[2]]
             if rev[index]
                 for j in indices
                     if j == index
-                        setupperbound(x[m + j], sign(result[j]))
-                        setlowerbound(x[m + j], sign(result[j]))
+                        set_upper_bound(x[m + j], sign(result[j]))
+                        set_lower_bound(x[m + j], sign(result[j]))
                     else
-                        setupperbound(x[m + j], 0)
-                        setlowerbound(x[m + j], 0)
+                        set_upper_bound(x[m + j], 0)
+                        set_lower_bound(x[m + j], 0)
                     end
                 end
-                @objective(fullModel, Max, sum{x[k]*S[k,j], k=1:m, j=findall(blocked)})
-                status = solve(fullModel)
-                certificate = getvalue(x)[1:m]
+                @objective(fullModel, Max, sum(x[k]*S[k,j] for k in 1:m, j=findall(blocked)))
+                optimize!(fullModel)
+                certificate = [value(x[j]) for j in 1:m]
             else
-                sparseModel = Model(solver = GLPKSolverLP())
+                sparseModel = Model(with_optimizer(GLPK.Optimizer))
                 @variable(sparseModel, y[j=1:m])
                 for j in 1:n
                     if j == index
-                        @constraint(sparseModel, sum{y[k]*S[k,j], k=1:m} == sign(result[j]))
+                        @constraint(sparseModel, sum(y[k]*S[k,j] for k in 1:m) == sign(result[j]))
                     elseif blocked[j]
-                        @constraint(sparseModel, sum{y[k]*S[k,j], k=1:m} <= 0)
+                        @constraint(sparseModel, sum(y[k]*S[k,j] for k in 1:m) <= 0)
                     else
-                        @constraint(sparseModel, sum{y[k]*S[k,j], k=1:m} == 0)
+                        @constraint(sparseModel, sum(y[k]*S[k,j] for k in 1:m) == 0)
                     end
                 end
-                @objective(sparseModel, Max, sum{y[k]*S[k,j], k=1:m, j=findall(blocked)})
-                status = solve(sparseModel)
-                certificate = getvalue(y)
+                @objective(sparseModel, Max, sum(y[k]*S[k,j] for k in 1:m, j=findall(blocked)))
+                optimize!(sparseModel)
+                certificate = [value(y[j]) for j in 1:m]
             end
             blocked = [in(j, indices) || result[j] ≈ -1 for j = 1:n]
             temp = sum(.!blocked)
@@ -133,7 +133,7 @@ and irreversible reactions and also returns the DCE positive certificates.
             Y = Y*Matrix(S[:, .!blocked]) - sparse(I, temp, temp)
             blocked[.!blocked] = [norm(Y[:, j]) < norm(S[:, .!blocked], 2)*eps(Float64) for j in 1:temp]
         else
-            certificate = getvalue(x)[1:m]
+            certificate = [value(x[j]) for j in 1:m]
         end
         certificates[:, indices] .= S'*certificate
         coupled = findall(blocked)
