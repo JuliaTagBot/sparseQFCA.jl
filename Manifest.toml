@@ -1,3 +1,5 @@
+# This file is machine-generated - editing it directly is not advised
+
 [[Base64]]
 uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 
@@ -76,7 +78,7 @@ uuid = "b552c78f-8df3-52c6-915a-8e097449b14b"
 version = "0.0.10"
 
 [[Distributed]]
-deps = ["LinearAlgebra", "Random", "Serialization", "Sockets"]
+deps = ["Random", "Serialization", "Sockets"]
 uuid = "8ba89e20-285c-5b6f-9357-94700520ee1b"
 
 [[FixedPointNumbers]]
@@ -92,10 +94,10 @@ uuid = "f6369f11-7733-5829-9624-2563aa707210"
 version = "0.10.3"
 
 [[GLPK]]
-deps = ["BinaryProvider", "Compat", "Libdl", "LinQuadOptInterface"]
-git-tree-sha1 = "82f64bfd090a95b7670ed0d7c734220f32983386"
+deps = ["BinaryProvider", "Libdl", "LinQuadOptInterface", "SparseArrays"]
+git-tree-sha1 = "b12093a67c3007b69d5403625d1920d59c16ac61"
 uuid = "60bf3e95-4087-53dc-ae20-288a0d20c6a6"
-version = "0.9.1"
+version = "0.10.0"
 
 [[HTTP]]
 deps = ["Base64", "Dates", "Distributed", "IniFile", "MbedTLS", "Random", "Sockets", "Test"]
@@ -110,7 +112,7 @@ uuid = "83e8ac13-25f8-5344-8a64-a9f2b223428f"
 version = "0.5.0"
 
 [[InteractiveUtils]]
-deps = ["LinearAlgebra", "Markdown"]
+deps = ["Markdown"]
 uuid = "b77e0a4c-d291-57a0-90e8-8db25a27a240"
 
 [[JSON]]
@@ -241,7 +243,7 @@ uuid = "30578b45-9adc-5946-b283-645ec420af67"
 version = "0.4.0"
 
 [[UUIDs]]
-deps = ["Random"]
+deps = ["Random", "SHA"]
 uuid = "cf7118a7-6976-5b1a-9a39-7adc72f591a4"
 
 [[Unicode]]
