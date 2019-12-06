@@ -1,3 +1,5 @@
+# This file is machine-generated - editing it directly is not advised
+
 [[Base64]]
 uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 
@@ -8,10 +10,10 @@ uuid = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
 version = "0.4.3"
 
 [[BinDeps]]
-deps = ["Compat", "Libdl", "SHA", "URIParser"]
-git-tree-sha1 = "12093ca6cdd0ee547c39b1870e0c9c3f154d9ca9"
+deps = ["Libdl", "Pkg", "SHA", "URIParser", "Unicode"]
+git-tree-sha1 = "66158ad56b4bf6cc8413b37d0b7bc52402682764"
 uuid = "9e28174c-4ba2-5203-b857-d8d62c4213ee"
-version = "0.8.10"
+version = "1.0.0"
 
 [[BinaryProvider]]
 deps = ["Libdl", "SHA"]
@@ -50,10 +52,16 @@ uuid = "34da2185-b29b-5c13-b0c7-acf172513d20"
 version = "2.2.0"
 
 [[Coverage]]
-deps = ["HTTP", "JSON", "LibGit2", "MbedTLS"]
-git-tree-sha1 = "0ae7665c507d592b643dd204c835e84dcd8d565c"
+deps = ["CoverageTools", "HTTP", "JSON", "LibGit2", "MbedTLS"]
+git-tree-sha1 = "540c90d34374c82bbb12c4e06df1ef246a81ace2"
 uuid = "a2441757-f6aa-5fb2-8edb-039e3f45d037"
-version = "0.9.3"
+version = "1.0.0"
+
+[[CoverageTools]]
+deps = ["LibGit2"]
+git-tree-sha1 = "542c90fb36c426891cd7a82924337530453df38f"
+uuid = "c36e975a-824b-4404-a568-ef97ca766997"
+version = "1.0.0"
 
 [[DataStructures]]
 deps = ["InteractiveUtils", "OrderedCollections"]
@@ -82,7 +90,7 @@ uuid = "b552c78f-8df3-52c6-915a-8e097449b14b"
 version = "0.1.0"
 
 [[Distributed]]
-deps = ["LinearAlgebra", "Random", "Serialization", "Sockets"]
+deps = ["Random", "Serialization", "Sockets"]
 uuid = "8ba89e20-285c-5b6f-9357-94700520ee1b"
 
 [[FixedPointNumbers]]
@@ -115,7 +123,7 @@ uuid = "83e8ac13-25f8-5344-8a64-a9f2b223428f"
 version = "0.5.0"
 
 [[InteractiveUtils]]
-deps = ["LinearAlgebra", "Markdown"]
+deps = ["Markdown"]
 uuid = "b77e0a4c-d291-57a0-90e8-8db25a27a240"
 
 [[JSON]]
@@ -245,7 +253,7 @@ uuid = "30578b45-9adc-5946-b283-645ec420af67"
 version = "0.4.0"
 
 [[UUIDs]]
-deps = ["Random"]
+deps = ["Random", "SHA"]
 uuid = "cf7118a7-6976-5b1a-9a39-7adc72f591a4"
 
 [[Unicode]]
